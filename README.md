@@ -42,6 +42,14 @@ Threat/Event Data
 - `server`: Node.js and Express API. Health endpoint: `GET /api/health`.
 - `ml-service`: Python FastAPI service. Health endpoint: `GET /health`.
 
+## Demo risk-prediction workflow
+
+`POST /api/events/:id/analyze` explicitly sends an existing threat event to the FastAPI risk scorer. The scorer uses a transparent weighted rule-based demo heuristic, not XGBoost or any trained model. The result is persisted as one `Prediction` and one `Alert`.
+
+The severity and priority thresholds are: 0–20 Low/P4, 21–40 Medium/P3, 41–70 High/P2, and 71–100 Critical/P1.
+
+For repeat analysis, the backend reuses the event's existing `demo-risk-rules-v1` prediction and its linked alert. It does not create duplicate alerts. Future CIC-IDS2017 attack detection is intentionally separate from this business-risk workflow and remains unavailable until a trained model is added.
+
 ## Getting started
 
 Install the frontend dependencies:
@@ -81,9 +89,9 @@ npm run dev
 
 # ml-service
 cd ml-service
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8001
 ```
 
-The local URLs are `http://localhost:5173`, `http://localhost:5000/api/health`, and `http://localhost:8000/health`.
+The local URLs are `http://localhost:5173`, `http://localhost:5000/api/health`, and `http://localhost:8001/health`.
 
 Copy `.env.example` to `.env` when environment configuration is needed; do not commit secrets.

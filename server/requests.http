@@ -1,0 +1,93 @@
+@baseUrl = http://localhost:5000/api
+@eventId = REPLACE_WITH_EVENT_ID
+@mlUrl = http://localhost:8001
+
+### 1. Health and database connection status
+GET {{baseUrl}}/health
+
+### 2. Create a clearly labelled demo event
+POST {{baseUrl}}/events
+Content-Type: application/json
+
+{
+  "attackType": "Ransomware",
+  "targetAsset": "Critical Database Server",
+  "eventFrequency": 85,
+  "assetCriticality": 95,
+  "vulnerabilityContext": 80,
+  "sourceReputation": 90,
+  "historicalOccurrence": 70,
+  "potentialImpact": 98,
+  "affectedScope": 75,
+  "description": "Illustrative demo event",
+  "dataMode": "Demo"
+}
+
+### 3. Retrieve all events
+GET {{baseUrl}}/events
+
+### 4. Retrieve one event
+GET {{baseUrl}}/events/{{eventId}}
+
+### Analyze an event (creates one demo prediction and one alert; repeat calls reuse it)
+POST {{baseUrl}}/events/{{eventId}}/analyze
+
+### 5. Filter by attack type
+GET {{baseUrl}}/events?attackType=Ransomware
+
+### 6. Create an asset
+POST {{baseUrl}}/assets
+Content-Type: application/json
+
+{
+  "name": "Critical Database Server",
+  "assetType": "Database Server",
+  "criticality": 95,
+  "owner": "Infrastructure Team"
+}
+
+### 7. Retrieve assets
+GET {{baseUrl}}/assets
+
+### 8. Invalid event input
+POST {{baseUrl}}/events
+Content-Type: application/json
+
+{
+  "attackType": "Invalid Attack",
+  "targetAsset": "",
+  "eventFrequency": 101
+}
+
+### 9. Nonexistent event
+GET {{baseUrl}}/events/000000000000000000000000
+
+### ML service health
+GET {{mlUrl}}/health
+
+### Direct demo rule-based risk score
+POST {{mlUrl}}/predict/risk
+Content-Type: application/json
+
+{
+  "attackType": "Ransomware",
+  "eventFrequency": 85,
+  "assetCriticality": 95,
+  "vulnerabilityContext": 80,
+  "sourceReputation": 90,
+  "historicalOccurrence": 70,
+  "potentialImpact": 98,
+  "affectedScope": 75
+}
+
+### Future attack-detection contract: returns 503 until a trained model exists
+POST {{mlUrl}}/predict/attack
+Content-Type: application/json
+
+{
+  "flowSchema": "CIC-IDS2017",
+  "flowFeatures": {
+    "Flow Duration": 1000,
+    "Total Fwd Packets": 10
+  }
+}
